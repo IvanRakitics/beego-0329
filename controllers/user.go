@@ -6,7 +6,7 @@ import (
 	//"fmt"
 	"encoding/json"
 	"math/rand"
-
+    //"time"
 	beego "github.com/beego/beego/v2/server/web"
 )
 
@@ -34,6 +34,7 @@ func (c *UserController) Check() {
 	Users := models.MapUsersInfo(user.Uphone)
 	res := result{}
 	res.Check = false
+	fmt.Printf("user res %v \n", Users)
 	if len(Users) > 0 {
 		res.Id = Users[0].Id
         res.Token = GetRandomString(15)
@@ -41,6 +42,7 @@ func (c *UserController) Check() {
 		if Users[0].User_password == user.Upassword{
 			res.Check = true
 		}
+        go models.UpdateUserInfo(res.Id, res.Token, res.Nick)
 	} else {
 		res.Id = 0
 		res.Token = GetRandomString(15)

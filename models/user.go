@@ -1,7 +1,6 @@
 package models
 
 import (
-	//"fmt"
     "github.com/jinzhu/gorm"
     _ "github.com/jinzhu/gorm/dialects/mysql"
 )
@@ -12,6 +11,7 @@ type Users struct {
     User_phone string `json:"user_phone"`
     User_password string `json:"user_password"`
 	Token string `json:"token"`
+    Nick string `json:"nick"`
 }
 
 func MapUsersInfo(phone string) ([]Users){
@@ -26,4 +26,16 @@ func MapUsersInfo(phone string) ([]Users){
     db.Where("user_phone=?", phone).Find(&r) //条件查找所有
     //fmt.Printf("%T\n", poolVolumes)
     return r
+}
+
+func UpdateUserInfo(id int,token string, nick string) {
+
+    db, err := gorm.Open("mysql", "root:zhou123456+@(120.48.4.168)/journal?charset=utf8mb4&parseTime=True&loc=Local")
+    if err!= nil{
+        panic(err)
+    }
+    defer db.Close()
+    db.AutoMigrate(&Users{})
+    var u Users
+    db.Model(&u).Where("Id = ?", id).Updates(map[string]interface{}{"Token": token, "Nick": nick})
 }
