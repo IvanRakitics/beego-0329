@@ -70,19 +70,29 @@ func GetRandomString(n int) string {
  }
 
  func (c *UserController) SendEmail() {
+
 	re := c.Ctx.Input.RequestBody
 	var emailInfo EmailInfo
 	json.Unmarshal(re, &emailInfo)
 	fmt.Printf("email %v \n", emailInfo.Email)
 	fmt.Printf("emailInfo %v \n", emailInfo)
+
+    res := result{}  
+
 	Users := models.MapUsersInfoByEmail(emailInfo.Email)
-	
     exist := len(Users) > 0
 	fmt.Printf("Users %v exist %v\n", Users, exist)
+
 	var Token string = GetRandomString(15)
 	go sendTokenToEmail(emailInfo.Email, Token)
 	go models.RegisterUserInfo(Token, emailInfo.Email, exist)
-	c.Data["json"] = emailInfo
+
+	if exist {
+		res.Id = Users[0].Id
+	}
+	res.Token = Token
+
+	c.Data["json"] = res
 	c.ServeJSON()
  }
 
