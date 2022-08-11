@@ -37,9 +37,13 @@ type OrdersInfo struct {
 }
 
 func (c *OrdersController) Done() {
+	res := results{Code: 300}
+    res.Item = Item{Id: 0}
+
 	re := c.Ctx.Input.RequestBody
 	var ordersInfo OrdersInfo
 	err := json.Unmarshal(re, &ordersInfo)
+
 	var orders models.Orders
 	orders.Amount = float32(ordersInfo.Data.Amount)
 	orders.Status = ordersInfo.Data.Status
@@ -48,6 +52,7 @@ func (c *OrdersController) Done() {
 	orders.Address = defaultAddress.Id
 	orders.Create_time = time.Now().Unix()
 	orders.Update_time = time.Now().Unix()
+
 	details := make([]models.OrderDetails, len(ordersInfo.Data.Details))
 	for _, each := range ordersInfo.Data.Details {
 		line := new(models.OrderDetails)
@@ -67,11 +72,13 @@ func (c *OrdersController) Done() {
 		details = append(details, *line)
 	}
 	fmt.Printf("orders %v details %v", orders, details)
+
 	if ordersInfo.Events.Eventstype == "create" {
-		models.InsertOrders(orders, details)
+		res.Item.Id,_ = models.InsertOrders(orders, details)
+		res.Code = 500
 	}
 	fmt.Println(err)
 	fmt.Println(ordersInfo)
-	c.Data["json"] = ordersInfo
+	c.Data["json"] = res
 	c.ServeJSON()
 }

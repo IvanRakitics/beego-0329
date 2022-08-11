@@ -37,7 +37,7 @@ type LineProducts struct {
 	Active int `json:"active"`
 }
 
-func InsertOrders(data Orders, details []OrderDetails)(bool){
+func InsertOrders(data Orders, details []OrderDetails)(int, bool){
     db, err := gorm.Open("mysql", "root:zhou123456+@(120.48.4.168)/journal?charset=utf8mb4&parseTime=True&loc=Local")
     if err!= nil{
         panic(err)
@@ -60,5 +60,5 @@ func InsertOrders(data Orders, details []OrderDetails)(bool){
 			db.Create(&v)
 		}
 	}
-	return true
+	return id[0], true
 }
