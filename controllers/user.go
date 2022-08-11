@@ -171,14 +171,21 @@ func GetRandomString(n int) string {
 
 	res := result{}
 	res.Check = false
-	if exist && Users[0].Token == user.Token {
-		res.Id = Users[0].Id
-		res.Check = true
-		res.Token = user.Token
-		res.Nick = GetRandomString(15)
-		go models.UpdateUserInfo(res.Id, user.Token, res.Nick, user.Upassword)
+	if exist {
+		fmt.Printf("token_input %v token %v flag %v\n", user.Token, Users[0].Token, Users[0].Token == user.Token)
+		if Users[0].Token == user.Token {
+			res.Id = Users[0].Id
+			res.Check = true
+			res.Token = user.Token
+			res.Nick = GetRandomString(15)
+			go models.UpdateUserInfo(res.Id, user.Token, res.Nick, user.Upassword)
+		} else {
+			res.Id = Users[0].Id
+			res.Check = false
+		}
+		
 	} else {
-		res.Id = Users[0].Id
+		res.Id = 0
 		res.Check = false
 	}
 	c.Data["json"] = res
