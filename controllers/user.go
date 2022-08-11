@@ -26,6 +26,9 @@ type User struct {
 	Uname string
 	Upassword string
 	Uphone string
+	Uemail string
+	Token string
+	UAccountType string
 }
 
 type EmailInfo struct {
@@ -36,8 +39,17 @@ func (c *UserController) Check() {
 	re := c.Ctx.Input.RequestBody
 	var user User
 	json.Unmarshal(re, &user)
-	fmt.Printf("user %v \n", user)
-	Users := models.MapUsersInfo(user.Uphone)
+	fmt.Printf("user %v UAccountType %v\n", user, user.UAccountType)
+
+	fmt.Printf("flag %v %v\n", user.UAccountType == "email", user.UAccountType == "phone")
+
+	var Users []models.Users
+	if user.UAccountType == "email" {
+		Users = models.MapUsersInfoByEmail(user.Uname)
+	} else if user.UAccountType == "phone" {
+		Users = models.MapUsersInfo(user.Uname)
+	}
+	
 	res := result{}
 	res.Check = false
 	fmt.Printf("user res %v \n", Users)
@@ -48,7 +60,7 @@ func (c *UserController) Check() {
 		if Users[0].User_password == user.Upassword{
 			res.Check = true
 		}
-        go models.UpdateUserInfo(res.Id, res.Token, res.Nick)
+        go models.UpdateUserInfo(res.Id, res.Token, res.Nick, user.Upassword)
 	} else {
 		res.Id = 0
 		res.Token = GetRandomString(15)
@@ -145,4 +157,30 @@ func GetRandomString(n int) string {
 	if err := d.DialAndSend(m); err != nil {
 		panic(err)
 	}
+ }
+
+ func (c *UserController) Register(){
+	re := c.Ctx.Input.RequestBody
+	var user User
+	json.Unmarshal(re, &user)
+	fmt.Printf("user %v \n", user)
+
+	Users := models.MapUsersInfoByEmail(user.Uemail)
+    exist := len(Users) > 0
+	fmt.Printf("Users %v exist %v\n", Users, exist)
+
+	res := result{}
+	res.Check = false
+	if exist && Users[0].Token == user.Token {
+		res.Id = Users[0].Id
+		res.Check = true
+		res.Token = user.Token
+		res.Nick = GetRandomString(15)
+		go models.UpdateUserInfo(res.Id, user.Token, res.Nick, user.Upassword)
+	} else {
+		res.Id = Users[0].Id
+		res.Check = false
+	}
+	c.Data["json"] = res
+	c.ServeJSON()
  }

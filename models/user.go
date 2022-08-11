@@ -44,7 +44,7 @@ func MapUsersInfoByEmail(email string) ([]Users){
     return r
 }
 
-func UpdateUserInfo(id int,token string, nick string) {
+func UpdateUserInfo(id int,token string, nick string, password string) {
 
     db, err := gorm.Open("mysql", "root:zhou123456+@(120.48.4.168)/journal?charset=utf8mb4&parseTime=True&loc=Local")
     if err!= nil{
@@ -53,7 +53,7 @@ func UpdateUserInfo(id int,token string, nick string) {
     defer db.Close()
     db.AutoMigrate(&Users{})
     var u Users
-    db.Model(&u).Where("Id = ?", id).Updates(map[string]interface{}{"Token": token, "Nick": nick})
+    db.Model(&u).Where("Id = ?", id).Updates(map[string]interface{}{"Token": token, "Nick": nick, "User_password": password})
 }
 
 func RegisterUserInfo(token string, email string, exist bool) {
