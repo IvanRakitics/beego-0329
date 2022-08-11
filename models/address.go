@@ -41,9 +41,10 @@ func GetDefaultAddressInfo(user int) (Address) {
 	defer db.Close()
 	db.AutoMigrate(&Address{})
 	var r []Address
-	//db.Find(&r) //条件查找所有
 	db.Where("User = ?", user).Find(&r) //条件查找所有
-	//fmt.Printf("%T\n", poolVolumes)
+	if len(r) == 0 {
+		return Address{}
+	}
 	var address Address
 	exist := false
 	for _,each := range r {

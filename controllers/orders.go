@@ -66,6 +66,7 @@ func (c *OrdersController) Done() {
 		line.Product = products
 		details = append(details, *line)
 	}
+	fmt.Printf("orders %v details %v", orders, details)
 	if ordersInfo.Events.Eventstype == "create" {
 		models.InsertOrders(orders, details)
 	}
