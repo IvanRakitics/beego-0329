@@ -54,7 +54,7 @@ func (c *OrdersController) Done() {
 	orders.Update_time = time.Now().Unix()
 
 	details := make([]models.OrderDetails, len(ordersInfo.Data.Details))
-	for _, each := range ordersInfo.Data.Details {
+	for index, each := range ordersInfo.Data.Details {
 		line := new(models.OrderDetails)
 		line.Delete_flag = 0
 		line.Item = each.Item
@@ -66,19 +66,31 @@ func (c *OrdersController) Done() {
 			lineproducts.ProductId = v
 			lineproducts.Active = 1
 			lineproducts.Item = each.Item
+			lineproducts.Order = 0
 			products[index] = lineproducts
 		}
 		line.Product = products
-		details = append(details, *line)
+		//details = append(details, *line)
+		details[index] = *line
 	}
-	fmt.Printf("orders %v details %v", orders, details)
+	fmt.Printf("orders %v details %v details.len %v\n", orders, details, len(details))
 
 	if ordersInfo.Events.Eventstype == "create" {
-		res.Item.Id,_ = models.InsertOrders(orders, details)
+		InternalId,_ := models.InsertOrders(orders, details)
+		res.Item.Id = InternalId
 		res.Code = 500
+		go models.AppendOrderInfos(InternalId)
 	}
 	fmt.Println(err)
 	fmt.Println(ordersInfo)
 	c.Data["json"] = res
+	c.ServeJSON()
+}
+
+func (c *OrdersController) Details(){
+	Id, _ := c.GetInt("id")
+	orders := models.MapOrderInfos(Id)
+	go models.AppendOrderInfos(Id)
+	c.Data["json"] = orders
 	c.ServeJSON()
 }

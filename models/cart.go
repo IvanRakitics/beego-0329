@@ -141,3 +141,17 @@ func InsertCart(cancel_flag int, count int, delete_flag int, user int, item int,
 	}
 	return true
 }
+
+// func MapProductsInfos(index int) (Product) {
+// 	db, err := gorm.Open("mysql", "root:zhou123456+@(120.48.4.168)/journal?charset=utf8mb4&parseTime=True&loc=Local")
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	defer db.Close()
+// 	db.AutoMigrate(&Product{})
+// 	var r Product
+//     //db.Find(&r) //条件查找所有
+//     db.Where("Number = ?", index).Find(&r) //条件查找所有
+//     fmt.Printf("%v\n", r)
+//     return r
+// }

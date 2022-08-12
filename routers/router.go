@@ -29,4 +29,5 @@ func init() {
 	beego.Router("/category/list", &controllers.CategoryController{}, "get:Details")
 
 	beego.Router("order/events", &controllers.OrdersController{}, "post:Done")
+	beego.Router("order/checkout", &controllers.OrdersController{}, "get:Details")
 }

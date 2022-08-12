@@ -47,6 +47,20 @@ func MapItemsInfo(start int) ([]Items){
     return r
 }
 
+func GetItemsInfo(id int) (Items){
+    db, err := gorm.Open("mysql", "root:zhou123456+@(120.48.4.168)/journal?charset=utf8mb4&parseTime=True&loc=Local")
+    if err!= nil{
+        panic(err)
+    }
+    defer db.Close()
+    db.AutoMigrate(&Items{})
+    var r Items
+    //db.Find(&r) //条件查找所有
+    db.Where("Id = ?", id).Find(&r) //条件查找所有
+    fmt.Printf("%v\n", r)
+    return r
+}
+
 func MapItemsDetailsInfo(itemId int) (*Items){
     db, err := gorm.Open("mysql", "root:zhou123456+@(120.48.4.168)/journal?charset=utf8mb4&parseTime=True&loc=Local")
     if err!= nil{
