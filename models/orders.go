@@ -71,6 +71,51 @@ func InsertOrders(data Orders, details []OrderDetails)(int, bool){
 	return MainId, true
 }
 
+func UpdatedOrders(data Orders, details []OrderDetails)(int, bool){
+    
+	fmt.Printf("UpdatedOrders %v %v id: %v\n", data, details, data.Id)
+
+	db, err := gorm.Open("mysql", "root:zhou123456+@(120.48.4.168)/journal?charset=utf8mb4&parseTime=True&loc=Local")
+    if err!= nil{
+        panic(err)
+    }
+    defer db.Close()
+    db.AutoMigrate(&Orders{}, &OrderDetails{}, &LineProducts{})
+
+	db.Model(&Orders{}).Where("Id = ?", data.Id).Updates(map[string]interface{}{
+		"Status": data.Status,
+		"Address": data.Address,
+		"Amount": data.Amount,
+		"Update_time": data.Update_time,
+	})
+
+	var orderDetails OrderDetails
+	err1 := db.Model(&orderDetails).Where("Main = ?", data.Id).Delete(&orderDetails)
+
+	if err1.Error != nil {
+		fmt.Printf("err1 %v\n", err1)
+		return data.Id,false
+	}
+
+	var lineProducts LineProducts
+	err2 := db.Model(&lineProducts).Where("`order` = ?", data.Id).Delete(&lineProducts)
+
+	if err2.Error != nil {
+		return data.Id,false
+	}
+
+	for _, each := range details {
+		each.Main = data.Id
+		for i, v := range each.Product{
+			v.Order = data.Id
+			each.Product[i] = v
+		}
+		db.Create(&each)
+	}
+
+	return data.Id,true
+}
+
 func MapOrderInfos( id int) (Orders){
 	db, err := gorm.Open("mysql", "root:zhou123456+@(120.48.4.168)/journal?charset=utf8mb4&parseTime=True&loc=Local")
     if err!= nil{
@@ -84,6 +129,20 @@ func MapOrderInfos( id int) (Orders){
     fmt.Printf("%v\n", r)
 	return *r
 }
+
+func MapUserOrdersInfos(user int) ([]Orders){
+	db, err := gorm.Open("mysql", "root:zhou123456+@(120.48.4.168)/journal?charset=utf8mb4&parseTime=True&loc=Local")
+    if err!= nil{
+        panic(err)
+    }
+    defer db.Close()
+    db.AutoMigrate(&Orders{}, &OrderDetails{}, &LineProducts{}, &Address{}, &Product{})
+	var r []Orders
+	db.Where("User=?", user).Preload("AddressInfo").Preload("Details").Preload("Details.Product").Find(&r) //条件查找所有
+    fmt.Printf("%v\n", r)
+	return r
+}
+
 func AppendOrderInfos( id int){
 	db, err := gorm.Open("mysql", "root:zhou123456+@(120.48.4.168)/journal?charset=utf8mb4&parseTime=True&loc=Local")
     if err!= nil{

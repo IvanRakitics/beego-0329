@@ -17,6 +17,7 @@ type DataInfo struct {
 	Amount  float32        `json:"amount"`
 	Status  int            `json:"status"`
 	User    int            `json:"user"`
+	Id    int            `json:"id"`
 	Details []OrderDetails `json:"details"`
 }
 
@@ -50,7 +51,6 @@ func (c *OrdersController) Done() {
 	orders.User = ordersInfo.Data.User
 	defaultAddress := models.GetDefaultAddressInfo(orders.User)
 	orders.Address = defaultAddress.Id
-	orders.Create_time = time.Now().Unix()
 	orders.Update_time = time.Now().Unix()
 
 	details := make([]models.OrderDetails, len(ordersInfo.Data.Details))
@@ -76,7 +76,19 @@ func (c *OrdersController) Done() {
 	fmt.Printf("orders %v details %v details.len %v\n", orders, details, len(details))
 
 	if ordersInfo.Events.Eventstype == "create" {
+
+		orders.Create_time = time.Now().Unix()
+
 		InternalId,_ := models.InsertOrders(orders, details)
+		res.Item.Id = InternalId
+		res.Code = 500
+		go models.AppendOrderInfos(InternalId)
+	}
+	if ordersInfo.Events.Eventstype == "update" {
+
+		orders.Id = ordersInfo.Data.Id
+
+		InternalId,_ := models.UpdatedOrders(orders, details)
 		res.Item.Id = InternalId
 		res.Code = 500
 		go models.AppendOrderInfos(InternalId)
@@ -91,6 +103,13 @@ func (c *OrdersController) Details(){
 	Id, _ := c.GetInt("id")
 	orders := models.MapOrderInfos(Id)
 	go models.AppendOrderInfos(Id)
+	c.Data["json"] = orders
+	c.ServeJSON()
+}
+
+func (c *OrdersController) Get(){
+	User, _ := c.GetInt("user")
+	orders := models.MapUserOrdersInfos(User)
 	c.Data["json"] = orders
 	c.ServeJSON()
 }
