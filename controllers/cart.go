@@ -52,7 +52,7 @@ func (c *CartController) Update() {
 	err := json.Unmarshal(re, &cart_data)
 	fmt.Println(err)
 
-	start_time := time.Now().UnixNano() / 1e6
+	start_time := time.Now()
 	fmt.Printf("start_time: %v second \n", start_time)
 	var flag bool
 	cart_list := models.SelectCart(cart_data.User, cart_data.Item)
@@ -76,9 +76,7 @@ func (c *CartController) Update() {
 			cart_data.Item,
 			cart_data.Label)
 	}
-	end_time := time.Now().UnixNano() / 1e6
-	fmt.Printf("end_time: %v second \n", end_time)
-	fmt.Printf("during: %v second \n", end_time-start_time)
+	fmt.Printf("during: %v second \n", time.Since(start_time))
 	res := results{}
 	if flag {
 		res.Code = 500
